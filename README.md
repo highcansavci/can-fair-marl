@@ -112,3 +112,7 @@ can/        # the CAN policy, environments, training schemes, baselines, figures
 paper/      # LaTeX source, figures, and built PDF
 results/    # experiment outputs (CSV), regenerable by the commands above
 ```
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
