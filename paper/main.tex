@@ -326,7 +326,7 @@ fresh exploiter, yielding robustness to the whole adversary history.}
 
 \section{Experiments}
 \textbf{Setup.} Unless noted, $N{=}6$, $T{=}100$, $d_{\max}{=}2$,
-$c\in\{0.3,0.5,0.7,0.9\}$, $3$ seeds; all policies are shared single-head
+$c\in\{0.3,0.5,0.7,0.9\}$, $5$ seeds; all policies are shared single-head
 cross-attention nets (hidden $64$) trained with REINFORCE/Adam (lr
 $3\times10^{-3}$, $B{=}512$ parallel episodes). Every reported policy is audited by
 a freshly trained best-response defector (Eq.~\eqref{eq:rho}). Implementation
@@ -735,9 +735,8 @@ condition---rather than an impossibility.
 
 \section*{Code Availability}
 All code (the graded-contention game, CAN, the architecture and training-scheme
-ablations, and all experiments) is available in an anonymized repository for
-review at \url{https://anonymous.4open.science/r/can-fair-marl}; a de-anonymized
-release will follow upon publication.
+ablations, and all experiments) and the \LaTeX{} source are available at
+\url{https://github.com/highcansavci/can-fair-marl}.
 
 \section*{Use of AI-Assisted Technologies}
 The author used Claude (Anthropic), including Claude Code, to assist with the
