@@ -17,3 +17,6 @@ paper/*.fdb_latexmk
 # os
 .DS_Store
 Thumbs.db
+
+# experiment run logs (results CSVs are committed; raw stdout logs are not)
+results/*.log
