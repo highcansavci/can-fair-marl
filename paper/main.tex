@@ -59,15 +59,23 @@ thereby approaching the centralized oracle on both axes \emph{without} a central
 allocator. On the same game the
 fair-MARL learners fail on complementary axes---GGF/FEN learn to yield and are
 exploitable ($\rho{\approx}N$), SOTO learns to all-contest and is wasteful (waste
-$c$)---while CAN is the only method that is both robust and efficient. On two further
+$c$)---and league-training those objectives under CAN's identical budget does not
+rescue them: they harden into the same corners, so adversarial training alone is
+not the mechanism, and the welfare-fair objectives are structurally hard to
+harden. A committed always-claim audit sharpens the limit from the other side:
+every learned defense, CAN included, \emph{deters} an adaptive exploiter but
+yields ground to a committed one as the leverage $(1{-}c)/2$ vanishes
+($\rho$ rising to ${\approx}3.9$ at $c{=}0.9$)---deterrence, not immunity.
+On two further
 games we find a clear scope rather than blanket generality: CAN stays efficient
 ($D{=}0$ efficiency $0.94$--$1.0$) and Pareto-dominates the welfare-fair learners
 throughout, but its robustness holds only in proportion to the contest leverage a
 game provides---strong on a multi-server game, partial when leverage weakens
 (high-value, high-contention steps), and absent under a winner-take-all rule where
-Prop.~1 fails. We further report where the approach is fragile---weak
-leverage and zero-shot transfer to much larger teams both degrade it at high
-contention---giving an honest account of how far decentralized robust fairness
+Prop.~1 fails. We further report where the approach is fragile---weak leverage,
+committed defectors at high contention, and detecting a \emph{lone} defector in
+much larger teams (transfer at constant defector fraction works zero-shot)---
+giving an honest account of how far decentralized robust fairness
 currently reaches.
 \end{abstract}
 
@@ -125,16 +133,20 @@ contention and act. What is load-bearing is \emph{behaviour-conditioning with
 adaptive aggregation}---the response must depend on \emph{how many} others are
 grabbing, not on fixed identities---and among permutation-respecting aggregators
 cross-attention is the most stable instance (Sec.~\ref{sec:ablation}). We train
-CAN against an adversarial league (PSRO~\cite{lanctot2017psro}) and audit it with a
-fresh best-response defector. CAN keeps exploitability low
-($\rho{\approx}1.2$--$1.5$) across all contention levels while wasting essentially
-nothing when no free-rider is present (efficiency ${\approx}1.0$), approaching the
-centralized oracle without any central allocator.
+CAN against an adversarial league (PSRO~\cite{lanctot2017psro}) and audit it with
+both a fresh best-response defector and a committed always-claim script. CAN keeps
+trained-best-response exploitability low ($\rho{\approx}1.2$--$1.5$) across all
+contention levels while wasting essentially nothing when no free-rider is present
+(efficiency ${\approx}1.0$), approaching the centralized oracle without any central
+allocator; against the \emph{committed} defector its robustness is a deterrence
+effect that decays as leverage vanishes (Sec.~\ref{sec:hardened}).
 
 We are deliberate about limits. We report a negative-leaning result---single
-adversary co-training is unreliable at low contention---and a genuine fragility:
-zero-shot transfer of an $N{=}6$ policy to teams of $12$ and $24$ holds at low
-contention but degrades at high contention. The contribution is a controlled,
+adversary co-training is unreliable at low contention---and two genuine
+fragilities: zero-shot transfer of an $N{=}6$ policy to teams of $12$ and $24$
+degrades at high contention, and robustness to a \emph{committed} (rather than
+adaptive) defector decays as leverage vanishes, for every method including ours
+(Sec.~\ref{sec:hardened}). The contribution is a controlled,
 honest map of how far decentralized robust fairness reaches, not a claim that the
 decentralization gap is closed.
 
@@ -169,9 +181,10 @@ learned attention policy can exploit it.
 \textbf{Attention in MARL.} Attention over agents is well established for
 value/critic mixing and communication, e.g.\ actor-attention
 critics~\cite{iqbal2019maac} and the centralized critics of
-MADDPG~\cite{lowe2017maddpg}. We use a single-head self-attention
-block~\cite{vaswani2017attention} \emph{in the decentralized policy} over observed
-behaviour tokens; its role is contention inference, and its
+MADDPG~\cite{lowe2017maddpg}. We use a single-head attention
+block~\cite{vaswani2017attention} \emph{in the decentralized policy}, each agent's
+query attending across all agents' observed-behaviour tokens (Sec.~IV); its role is
+contention inference, and its
 permutation-equivariance gives a single $N$-agnostic policy that can be evaluated at
 unseen team sizes.
 
@@ -199,7 +212,13 @@ where each claimer receives $g(m)$ and $c\in[0,1]$ is the contention
 \emph{waste}. A sole claimer wins the whole unit; $m\ge 2$ claimers split a
 discounted $1{-}c$; if nobody claims, the resource flows (losslessly) to the
 worst-off agent. The parameter $c$ interpolates from lossless sharing ($c{=}0$) to
-the all-or-nothing model ($c{=}1$, where contesting destroys the resource).
+the all-or-nothing model ($c{=}1$, where contesting destroys the resource). One
+caveat is worth stating plainly: the $m{=}0$ branch is itself a need-based
+mechanism---when nobody claims, the \emph{rule}, not an agent, routes the unit to
+the worst-off. Our no-central-allocator claim therefore concerns contested steps:
+whenever $m\ge1$, who gets what is decided entirely by the agents' own
+\textsc{Claim}/\textsc{Yield} choices, and that is where the robustness problem
+lives.
 
 \textbf{Threat model.} Each episode, each agent is independently a \emph{defector}
 with some probability, so the number of free-riders $D$ is variable and unknown
@@ -251,6 +270,24 @@ $W_{\mathrm{coop}}{=}\mathrm{mean}{-}\mathrm{std}$ (Sec.~IV). Contesting is thus
 rewarded both at the level of the individual worst-off agent and of the team
 objective.
 
+\noindent\emph{Dominance, not equilibrium.} Proposition~1 is a per-step dominance
+statement, not an equilibrium analysis of the repeated game: it fixes a step on
+which a single free-rider claims and gives the worst-off cooperator's myopic best
+reply. It does not assert that always-contesting is an equilibrium of the $T$-step
+game (it is not: when $D{=}0$, contesting burns $c$ for nothing), nor that a
+defector's best response is to always claim---against a team that contests
+proportionally, each extra claim earns only the marginal share $(1{-}c)/m$.
+Empirically the two come apart: the \emph{trained} best-response defector is
+deterrable---against a league-trained cooperator it converges to \emph{end-game}
+claiming (claim rate ${\approx}0$ over the first three episode quarters,
+${\approx}0.65$ in the last, at both $c{=}0.5$ and $c{=}0.9$), harvesting where
+the finite horizon leaves punishment no future to bite---whereas a
+\emph{committed} always-claim script ignores punishment, and at high $c$ it
+extracts more than the trained best response finds (Sec.~\ref{sec:hardened}). Our audits therefore report the worse of the two. A full
+equilibrium characterization of the repeated graded-contention game is open; our
+claims are the existence of the per-step lever and the empirical exploitability
+audit built on it.
+
 \noindent Proposition~1 establishes that the lever \emph{exists} for every $c<1$;
 it does not say how to pull it. The cooperator must contest \emph{only} when a
 free-rider is present (else it pays the waste $c$ for nothing) and only \emph{enough}
@@ -271,15 +308,20 @@ where $\bar u,u_{\min}$ are the team mean/min utilities and $cc_i/t$ is agent $i
 running claim-rate. The claim-rate channel is what lets a cooperator estimate
 \emph{how many} others are grabbing.
 
-\textbf{Architecture.} CAN is a single-head self-attention block over the $N$
-tokens: with $Q,K,V$ linear projections of $\{x_i\}$,
+\textbf{Architecture.} CAN's aggregator is a single-head attention block over the
+$N$ tokens: with $Q,K,V$ linear projections of $\{x_i\}$,
 $\mathrm{ctx}=\mathrm{softmax}(QK^\top/\sqrt{d})V$; each agent concatenates its
 token with its context, passes a $\tanh$ layer, and outputs
-\textsc{Claim}/\textsc{Yield} logits (Fig.~\ref{fig:arch}a). The block is shared by
+\textsc{Claim}/\textsc{Yield} logits (Fig.~\ref{fig:arch}a). We use
+\emph{cross-attention} in the inter-agent sense---agent $i$'s query attends
+\emph{across} all agents' behaviour tokens to build its context---computed for all
+agents at once as a single self-attention pass over the token matrix; it is not the
+two-sequence encoder--decoder block sometimes meant by the same term. The block is shared by
 all cooperators and \emph{permutation-equivariant}, so (i) the policy is
-decentralized---agent $i$ acts on the public tokens, no central allocator decides
-the allocation---and (ii) it is $N$-agnostic, enabling zero-shot evaluation at
-unseen team sizes.
+decentralized---agent $i$ acts on the public tokens, and on every contested step
+($m\ge1$) no central allocator decides the allocation (the $m{=}0$ fallback is the
+mechanism's, Sec.~III)---and (ii) it is $N$-agnostic, enabling zero-shot evaluation
+at unseen team sizes.
 
 \textbf{Cooperator objective.} Cooperators maximize a per-step welfare reward-to-go
 with welfare
@@ -332,7 +374,7 @@ $3\times10^{-3}$, $B{=}512$ parallel episodes). Every reported policy is audited
 a freshly trained best-response defector (Eq.~\eqref{eq:rho}). Implementation
 details are in the appendix.
 
-\subsection{Head-to-head with fair-MARL learners}
+\subsection{Head-to-head with fair-MARL learners}\label{sec:headtohead}
 We first place CAN against the welfare-fair learners that motivate the problem,
 \emph{on the same graded-contention game and under the same bounded audit}: a
 shared-policy GGF maximizer, a faithful SOTO (Self-/Team-Oriented sub-nets,
@@ -342,10 +384,10 @@ agents maximize the fair-efficient reward $\bar u/(c_0{+}|u_i{-}\bar u|)$%
 \emph{cooperatively} (no defector at train time, as in their originals); we then
 freeze each team and train a best-response defector. This comparison is therefore
 \emph{fair-as-published vs.\ robust-by-design}: it isolates whether the fair
-\emph{objective alone} confers robustness (it does not), not whether these
-objectives could be hardened by adversarial training. The training axis itself---
-cooperative vs.\ league---is isolated separately in
-Sec.~\ref{sec:reliability} on CAN's own architecture.
+\emph{objective alone} confers robustness (it does not). The training axis is
+isolated separately: Sec.~\ref{sec:reliability} varies the adversarial scheme on
+CAN's own architecture, and Sec.~\ref{sec:hardened} league-trains the fair
+objectives themselves under CAN's identical budget---which does not rescue them.
 
 The result is a clean two-axis separation (Fig.~\ref{fig:tradeoff},
 Table~\ref{tab:headtohead}). Every fair learner is fair at $D{=}0$ (Jain
@@ -441,7 +483,11 @@ free-rider's per-step take at $(1{-}c)/2$, so targeted contention denies it more
 effectively (Prop.~1). Vanilla co-training shows the opposite drift, rising to
 $2.24$: training against a static adversary does not teach \emph{when} to contest.
 Training against a \emph{learned} exploiter is what converts the existence of
-leverage (Prop.~1) into robustness.
+leverage (Prop.~1) into robustness. One qualification is established in
+Sec.~\ref{sec:hardened}: these $\rho$ values audit with a \emph{trained}
+best-response defector, which turns out to be a deterrable adversary; a
+\emph{committed} always-claim defector extracts more at high $c$, where the
+trained-defector audit is most flattering.
 
 \begin{table}[t]
 \caption{Best-response free-ride $\rho$ vs.\ contention $c$ ($N{=}6$, mean with
@@ -471,6 +517,69 @@ centralized-oracle line is $\rho{=}1$. Mean with 95\% bootstrap CI, pooled over
 independent gen-6 runs ($15$ league / $10$ vanilla seed-runs).}
 \label{fig:robust}
 \end{figure}
+
+\subsection{Hardening the fair objectives, and a committed-defector audit}
+\label{sec:hardened}
+The head-to-head of Sec.~\ref{sec:headtohead} compared fair-as-published against
+robust-by-design, leaving open whether the fair objectives could be rescued by
+adversarial training alone. We close that cell: GGF, FEN, and SOTO are wrapped in
+the \emph{identical} league loop as CAN---same tokens, same $6\times(1200{+}1000)$
+update budget, same per-step reward-to-go estimator with entropy annealing, same
+$D\sim\mathrm{Unif}\{0..2\}$ training distribution---with only the welfare
+function swapped (each reduces to its published objective at $D{=}0$; SOTO's
+$\beta$ anneals globally over the league's cooperator updates) and the per-agent
+MLP architecture of the originals. Every audit reports the \emph{worse} of two
+adversaries: the standard trained best response and a scripted always-claim
+defector ($5$ seeds per cell; Table~\ref{tab:hardened}).
+
+\textbf{Hardening does not rescue the fair objectives.} FEN+PSRO has exactly two
+attractors: all-contest at $c\le0.7$ ($D{=}0$ efficiency exactly $1{-}c$,
+$\rho{\approx}1$) and, at $c{=}0.9$, a per-seed bifurcation between yield
+(efficient but $\rho{\approx}6{=}N$ \emph{after six league generations}) and
+all-contest (efficiency $0.10$). GGF+PSRO and SOTO+PSRO stay efficient
+($0.90$--$0.99$) and partially deter the \emph{trained} exploiter
+($\rho{\approx}1.4$--$2.3$), but the committed script collects
+$\rho{\approx}2$--$4.8$ as $c$ rises. No method reaches the good corner
+($D{=}0$ eff.\ $\ge0.95$ and $\rho\le1.6$) beyond $c{=}0.3$. Adversarial training
+alone is therefore \emph{not} the mechanism behind CAN's position in
+Fig.~\ref{fig:tradeoff}: the welfare-fair objectives are structurally hard to
+harden.
+
+\textbf{The dual audit also sharpens CAN's own limit.} Retraining CAN's league
+under the dual audit reproduces the trained-best-response $\rho$ of
+Table~\ref{tab:robust} within CIs, but the committed always-claim defector
+extracts $1.28$ / $1.72$ / $2.29$ / $3.93$ at $c{=}0.3$--$0.9$. The
+interpretation of Table~\ref{tab:robust}'s flat $\rho$ therefore changes:
+league training produces \emph{deterrence}---the trained exploiter is punished
+into hiding, converging to end-game claiming (claim rate
+${\approx}0/0/0/0.65$ by episode quarter), the finite-horizon shape of a
+deterred adversary---rather than \emph{immunity}. A committed defector ignores
+punishment, and sustaining the threat costs the contesters $(1{-}c)/2\to0$, so
+robustness to commitment decays exactly as Prop.~1's leverage vanishes. CAN
+remains the least exploitable efficient policy at every $c$ under the stricter
+score, but the deterrence-vs-commitment gap grows with $c$ for every method,
+CAN included. This is the honest empirical match to the theory: decentralized
+defense works \emph{as far as leverage reaches}, and no farther.
+
+\begin{table}[t]
+\caption{Hardened baselines vs.\ CAN under the dual audit: $D{=}0$ efficiency /
+committed-defector exploitability $\max(\rho_{\mathrm{BR}},
+\rho_{\mathrm{always}})$, mean over $5$ seeds. No hardened fair objective
+reaches the good corner; CAN is best everywhere but decays with $c$.}
+\label{tab:hardened}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+$c$ & 0.3 & 0.5 & 0.7 & 0.9 \\
+\midrule
+GGF+PSRO  & 0.94 / 1.60 & 0.98 / 2.04 & 0.99 / 2.88 & 0.99 / 4.76 \\
+FEN+PSRO  & 0.70 / 1.04 & 0.50 / 1.02 & 0.37 / 1.78 & 0.63 / 4.07 \\
+SOTO+PSRO & 0.90 / 1.55 & 0.98 / 2.02 & 0.97 / 2.50 & 0.99 / 4.26 \\
+CAN (league) & \textbf{0.97 / 1.28} & \textbf{0.97 / 1.72} &
+\textbf{0.99 / 2.29} & \textbf{1.00 / 3.93} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Larger $d_{\max}$ and defector coalitions}
 The main results cap the per-episode defector count at $d_{\max}{=}2$, an easy
@@ -595,7 +704,36 @@ generalize to crowds at high waste---rather than smoothing it over. The obvious
 remedy does not work: training on a size curriculum ($N\in\{4,6,8,12\}$, evaluating
 at the held-out $N{=}24$) helps only at $c{=}0.3$ and \emph{worsens} mid-range
 transfer (it dilutes the per-size budget), leaving the high-contention gap unchanged
-($\rho{=}4.5$ at $c{=}0.9$, vs.\ $4.5$ for $N{=}6$-only). Closing it is open.
+($\rho{=}4.5$ at $c{=}0.9$, vs.\ $4.5$ for $N{=}6$-only).
+
+Two follow-up experiments locate the failure precisely, and it is \emph{not} team
+size per se. First, re-parameterizing the tokens to be $N$-invariant in scale
+(utility \emph{shares} and z-scored deviations in place of $T$-normalized levels,
+plus explicit claimed-fraction channels) leaves the high-$c$ gap unchanged
+($\rho{=}9.2$ at $N{=}24$, $c{=}0.9$), and the trained policy's attention stays
+proportionally sharp at every team size---so neither input scale drift nor
+attention dilution is the cause. Second, evaluating at a constant defector
+\emph{fraction} ($D{=}N/6$ rather than a lone defector), the unmodified $N{=}6$
+policy transfers essentially perfectly: $\rho{=}2.5\to1.5$ from $N{=}6$ to
+$N{=}48$ at $c{=}0.9$, flat or improving at every $c$. What degrades with $N$ is
+the \emph{detection of a single defector}: a lone free-rider is a vanishing
+fraction of every aggregate the policy can form (its weight under any convex
+pooling scales ${\sim}1/N$), so the onset of contestation arrives later as $N$
+grows---at $N{=}48$, $c{=}0.9$ cooperators are nearly silent for the first
+${\sim}30$ steps, during which the sole-claiming defector banks full, waste-free
+units. The free-ride against a lone defector is a \emph{count} quantity, not a
+fraction quantity, and no mean-field-style parameterization preserves it.
+Breaking the $1/N$ scaling is partially possible: adding a count-preserving
+max-pooled suspicion branch to the aggregation, fed by an instantaneous
+claimed-last-step channel, restores near-immediate detection at $N{=}48$ and
+roughly halves the lone-defector $\rho$ twice over ($N{=}24$, $c{=}0.9$:
+$8.9\to4.6$; $N{=}48$: $20.2\to6.9$; the channel is useless without the max
+statistic and vice versa at high $c$). What remains is a \emph{structural
+floor}: with detection latency $L$ steps, the defector banks $L$ full units
+while every later contested step delivers only $1{-}c$, so
+$\rho\approx N L/(L+(T{-}L)(1{-}c))$ stays high as $c\to1$ even under
+near-perfect detection---the price of the detection window, not an inference
+failure.
 
 \begin{figure}[t]
 \centering
@@ -687,26 +825,44 @@ oracle.}
 \textbf{What this shows.} The decentralization gap left open by prior
 work~\cite{savci2026exploit} is not fundamental: on the graded game a decentralized
 cross-attention policy trained against an adversarial league recovers most of the
-centralized oracle's incentive-compatibility ($\rho{\approx}1.2$--$1.5$) \emph{and}
+centralized oracle's incentive-compatibility against adaptive exploiters
+($\rho{\approx}1.2$--$1.5$; committed defectors are deterred only as far as
+leverage reaches, Sec.~\ref{sec:hardened}) \emph{and}
 its efficiency (${\approx}1.0$ when no free-rider is present), with no central
 allocator. The all-or-nothing futility result is the boundary case $c{=}1$. The
 effect is not automatic for every graded rule, though: it requires that contesting a
 free-rider actually return a positive share to the contester (Prop.~1), which the
 stakes and Matthew games show can be weak or absent.
 
-\textbf{Where it is fragile.} (i) Zero-shot transfer to much larger teams degrades
-at high contention (Fig.~\ref{fig:transfer}), and a naive size curriculum does not
-fix it (it dilutes the per-size budget and leaves the $c{=}0.9$ gap unchanged);
-crowd-scale robustness at high waste is an open problem. (ii) The single-adversary
+\textbf{Where it is fragile.} (i) Zero-shot transfer against a \emph{lone}
+defector degrades with team size at high contention (Fig.~\ref{fig:transfer});
+neither a size curriculum nor $N$-invariant tokens fix it, because the cause is
+detection latency---a single defector is a vanishing fraction of every aggregate,
+so evidence scales ${\sim}1/N$. Transfer at constant defector fraction already
+works; crowd-scale detection of a lone free-rider at high waste is the open
+problem. (ii) The single-adversary
 scheme
 is seed-sensitive at low contention; league training is needed for consistency, at
 extra training cost. (iii) Robustness is bounded by leverage: on the stakes game it
 degrades at high contention (where contesting a jackpot returns almost nothing), and
 under a winner-take-all (Matthew) rule it disappears entirely---CAN is robust only
-as far as Prop.~1's leverage extends. (iv) Our games are controlled abstractions with
+as far as Prop.~1's leverage extends. (iv) What league training buys is
+\emph{deterrence} of adaptive exploiters, not immunity: a \emph{committed}
+always-claim defector, which no amount of punishment dissuades, extracts more as
+$c\to1$ (Sec.~\ref{sec:hardened})---for every method, ours included. Whether
+learned commitment (sustained punishment that makes even a committed defector's
+take unprofitable) can close this gap is the natural next question. In
+boundary experiments at $c{=}1$ we find it is a \emph{credibility} problem:
+scripted trigger policies over the same public signals (grim /
+tit-for-tat on observed claim rates) hold best-response \emph{and}
+patient learning defectors at exactly $\rho{=}1.0$ with no efficiency cost,
+while league-learned policies---whose punishment is probabilistic rather than
+absorbing---leave a residual $\rho{\approx}1.8$; detection is not the obstacle,
+learning an absorbing threat is. (v) Our games
+are controlled abstractions with
 a single shared cooperator policy; spatial/continuous environments are still open
 (coordinated defector coalitions, by contrast, we do test, and they are no harder
-than a lone free-rider). (v) The oracle remains an upper bound CAN approaches but
+than a lone free-rider). (vi) The oracle remains an upper bound CAN approaches but
 does not reach.
 
 \textbf{Takeaway.} Fair-MARL methods are usually reported on the fairness they
@@ -721,11 +877,11 @@ contention makes contesting a free-rider strictly worthwhile for the worst-off
 (Prop.~1), but exploiting this requires inferring an unknown, variable number of
 free-riders and responding proportionally. CAN---a permutation-equivariant
 cross-attention policy over observed behaviour, trained against an adversarial
-league---does so, holding best-response exploitability low across the contention
-range (and most robust at the highest contention) while wasting essentially nothing
-when no free-rider is
+league---does so, holding trained-best-response exploitability low across the
+contention range while wasting essentially nothing when no free-rider is
 present, thereby approaching a centralized need-based oracle without a central
-allocator. We are explicit about scope rather than claiming blanket generality:
+allocator; against a committed defector this protection is a deterrence effect
+that holds in proportion to the remaining leverage. We are explicit about scope rather than claiming blanket generality:
 across additional games CAN stays efficient and dominates the welfare-fair learners,
 but its robustness holds in proportion to the contest leverage---strong on a
 multi-server game, only partial where the leverage weakens (high-value steps at high
@@ -806,9 +962,11 @@ maximise the per-step increment of
 $W_{\mathrm{coop}}{=}\mathrm{mean}_{i\in\mathcal{C}}(u_i){-}\mathrm{std}_{i\in\mathcal{C}}(u_i)$.
 
 \section{Implementation Details}
-CAN and all adversaries are shared single-head self-attention blocks (hidden width
-$64$): $Q,K,V$ linear maps of the $N{\times}6$ token matrix, scaled-dot-product
-attention, a $\tanh$ layer on $[\,x_i\,\|\,\mathrm{ctx}_i\,]$, and a $2$-logit head.
+CAN and all adversaries are shared single-head attention blocks (the inter-agent
+cross-attention of Sec.~IV, computed as one self-attention pass over the
+$N{\times}6$ token matrix; hidden width $64$): $Q,K,V$ linear maps,
+scaled-dot-product attention, a $\tanh$ layer on $[\,x_i\,\|\,\mathrm{ctx}_i\,]$,
+and a $2$-logit head.
 All policies train with REINFORCE and Adam (lr $3\times10^{-3}$), $B{=}512$
 parallel episodes, episodes of $T{=}100$ steps, with the entropy coefficient
 annealed from $0.05$ to $0.003$. Per-episode defector count is
@@ -816,7 +974,15 @@ $D\sim\mathrm{Unif}\{0,1,2\}$. Vanilla/population co-training run $3000$ updates
 league training runs $6$ generations of $1200$ cooperator updates against the pool
 and $1000$ updates per fresh best response. Every audit trains a best-response
 defector for $1500$ updates against the frozen cooperator and reports $\rho$ from
-Eq.~\eqref{eq:rho}. The cooperator welfare is the masked
+Eq.~\eqref{eq:rho}; the dual audit of Sec.~\ref{sec:hardened} additionally rolls
+out a scripted always-claim defector at a random index and reports the worse of
+the two $\rho$ values per seed. The hardened baselines of Sec.~\ref{sec:hardened}
+reuse this league setup verbatim with the cooperator welfare replaced by the
+respective published objective masked to cooperators (GGF over cooperator
+utilities; FEN's fair-efficient reward with the mean over cooperators; SOTO's
+self/team sub-nets with $\beta{:}1{\to}0$ annealed globally over the
+$6\times1200$ cooperator updates) on the per-agent MLP (hidden $64$) of the
+cooperative baselines. The cooperator welfare is the masked
 $\mathrm{mean}{-}\mathrm{std}$ over cooperators; advantages are discounted
 ($\gamma{=}0.99$) per-step welfare increments with a batch-mean (or learned value)
 baseline. The architecture ablation reuses this league setup with the
