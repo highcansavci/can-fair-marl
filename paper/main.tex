@@ -858,7 +858,14 @@ tit-for-tat on observed claim rates) hold best-response \emph{and}
 patient learning defectors at exactly $\rho{=}1.0$ with no efficiency cost,
 while league-learned policies---whose punishment is probabilistic rather than
 absorbing---leave a residual $\rho{\approx}1.8$; detection is not the obstacle,
-learning an absorbing threat is. (v) Our games
+learning an absorbing threat is. The gap closes by \emph{teaching}: two
+public-recursion token channels (an absorbing offensive-claim flag and its team
+trigger) plus behaviour-cloning of the scripted trigger reach exact grim parity
+($\rho{=}1.0$ against fresh and patient learners, $0.8\%$ false-positive cost);
+without the absorbing channels the clone must substitute paranoia for memory
+(a $7$--$10\%$ false-positive tax at $D{=}0$), and league RL does not discover
+the commitment even when it is representable---its learned training adversaries
+are themselves deterrable, so absorption is never differentially rewarded. (v) Our games
 are controlled abstractions with
 a single shared cooperator policy; spatial/continuous environments are still open
 (coordinated defector coalitions, by contrast, we do test, and they are no harder
