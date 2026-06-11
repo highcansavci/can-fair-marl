@@ -698,6 +698,15 @@ at the held-out $N{=}24$) helps only at $c{=}0.3$ and \emph{worsens} mid-range
 transfer (it dilutes the per-size budget), leaving the high-contention gap unchanged
 ($\rho{=}4.5$ at $c{=}0.9$, vs.\ $4.5$ for $N{=}6$-only).
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{fig_transfer.png}
+\caption{Zero-shot transfer of the $N{=}6$ policy to larger teams (log scale). Robust
+at low contention; degrades with team size at high contention. All curves remain
+below the all-yield ceiling $\rho{=}N$; the oracle line is $\rho{=}1$.}
+\label{fig:transfer}
+\end{figure}
+
 Two follow-up experiments locate the failure precisely, and it is \emph{not} team
 size per se (Fig.~\ref{fig:transfer_count}). First, re-parameterizing the tokens
 to be $N$-invariant in scale
@@ -754,15 +763,6 @@ $\rho{<}2.5$ target through $c{=}0.7$. The $c{=}0.9$ residual is the
 structural floor $\rho\approx NL/(L{+}(T{-}L)(1{-}c))$.}
 \label{fig:transfer_fix}
 \end{figure*}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{fig_transfer.png}
-\caption{Zero-shot transfer of the $N{=}6$ policy to larger teams (log scale). Robust
-at low contention; degrades with team size at high contention. All curves remain
-below the all-yield ceiling $\rho{=}N$; the oracle line is $\rho{=}1$.}
-\label{fig:transfer}
-\end{figure}
 
 \subsection{Generality across environments}\label{sec:generality}
 The experiments so far use the single-resource graded game. To test whether CAN's
