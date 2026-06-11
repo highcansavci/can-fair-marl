@@ -141,12 +141,14 @@ def always_claim_act(tok, key):
 
 
 # ------------------------- best-response defector --------------------------------
-def br_defector(rf, c, iters, lr=3e-3, seed=7, B=512, return_act=False):
-    """Best-response XAttn defector at a random index vs the frozen team rf."""
+def br_defector(rf, c, iters, lr=3e-3, seed=7, B=512, return_act=False,
+                feat=6):
+    """Best-response XAttn defector at a random index vs the frozen team rf.
+    `feat` = token dimension produced by rf (6 for v1 tokens)."""
     pol = XAttn()
     key = jax.random.PRNGKey(seed)
     key, ki = jax.random.split(key)
-    dp = pol.init(ki, jnp.zeros((1, N, 6)))
+    dp = pol.init(ki, jnp.zeros((1, N, feat)))
     tx = optax.adam(lr); opt = tx.init(dp)
 
     @jax.jit
@@ -250,7 +252,7 @@ def league_train_g(c, gamma, generations=6, coop_iters=1200, br_iters=1000,
 
 
 # ------------------------- audits ------------------------------------------------
-def audit(rf, c, B=512, br_iters=1500, seed=7):
+def audit(rf, c, B=512, br_iters=1500, seed=7, feat=6):
     """Three adversary classes + cost axis. Returns dict of metrics."""
     out = {}
     m0 = jnp.zeros((B, N))
@@ -263,7 +265,7 @@ def audit(rf, c, B=512, br_iters=1500, seed=7):
     out["ac_rho"], _, out["ac_d1eff"] = evaluate(uF, d_oh, T)
     for name, mult in [("br", 1), ("patient", 3)]:
         def_act = br_defector(rf, c, br_iters * mult, seed=seed + 700 + mult,
-                              return_act=True)
+                              return_act=True, feat=feat)
         kd, kr = jax.random.split(jax.random.PRNGKey(seed + 3 + mult))
         d_oh = jax.nn.one_hot(jax.random.randint(kd, (B,), 0, N), N)
         uF, _ = rf(def_act, d_oh, kr)
