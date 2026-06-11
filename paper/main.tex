@@ -530,7 +530,8 @@ function swapped (each reduces to its published objective at $D{=}0$; SOTO's
 $\beta$ anneals globally over the league's cooperator updates) and the per-agent
 MLP architecture of the originals. Every audit reports the \emph{worse} of two
 adversaries: the standard trained best response and a scripted always-claim
-defector ($5$ seeds per cell; Table~\ref{tab:hardened}).
+defector ($5$ seeds per cell; Table~\ref{tab:hardened},
+Fig.~\ref{fig:hardened}).
 
 \textbf{Hardening does not rescue the fair objectives.} FEN+PSRO has exactly two
 attractors: all-contest at $c\le0.7$ ($D{=}0$ efficiency exactly $1{-}c$,
@@ -580,6 +581,19 @@ CAN (league) & \textbf{0.97 / 1.28} & \textbf{0.97 / 1.72} &
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig_hardened.png}
+\caption{Hardened baselines vs.\ v1 on the efficiency--exploitability plane
+(per seed$\times c$; hardened points outlined, v1 cooperative training faded).
+League-training the fair objectives moves FEN/SOTO toward the wasteful
+all-contest corner and leaves GGF efficient but exploitable; no hardened
+baseline reaches the good corner. CAN under the dual audit (committed
+always-claim included) remains the least exploitable efficient policy but
+decays toward high $c$---deterrence, not immunity.}
+\label{fig:hardened}
+\end{figure}
 
 \subsection{Larger $d_{\max}$ and defector coalitions}
 The main results cap the per-episode defector count at $d_{\max}{=}2$, an easy
@@ -707,7 +721,8 @@ transfer (it dilutes the per-size budget), leaving the high-contention gap uncha
 ($\rho{=}4.5$ at $c{=}0.9$, vs.\ $4.5$ for $N{=}6$-only).
 
 Two follow-up experiments locate the failure precisely, and it is \emph{not} team
-size per se. First, re-parameterizing the tokens to be $N$-invariant in scale
+size per se (Fig.~\ref{fig:transfer_count}). First, re-parameterizing the tokens
+to be $N$-invariant in scale
 (utility \emph{shares} and z-scored deviations in place of $T$-normalized levels,
 plus explicit claimed-fraction channels) leaves the high-$c$ gap unchanged
 ($\rho{=}9.2$ at $N{=}24$, $c{=}0.9$), and the trained policy's attention stays
@@ -715,7 +730,8 @@ proportionally sharp at every team size---so neither input scale drift nor
 attention dilution is the cause. Second, evaluating at a constant defector
 \emph{fraction} ($D{=}N/6$ rather than a lone defector), the unmodified $N{=}6$
 policy transfers essentially perfectly: $\rho{=}2.5\to1.5$ from $N{=}6$ to
-$N{=}48$ at $c{=}0.9$, flat or improving at every $c$. What degrades with $N$ is
+$N{=}48$ at $c{=}0.9$, flat or improving at every $c$ (dashed curves in
+Fig.~\ref{fig:transfer_count}). What degrades with $N$ is
 the \emph{detection of a single defector}: a lone free-rider is a vanishing
 fraction of every aggregate the policy can form (its weight under any convex
 pooling scales ${\sim}1/N$), so the onset of contestation arrives later as $N$
@@ -723,7 +739,8 @@ grows---at $N{=}48$, $c{=}0.9$ cooperators are nearly silent for the first
 ${\sim}30$ steps, during which the sole-claiming defector banks full, waste-free
 units. The free-ride against a lone defector is a \emph{count} quantity, not a
 fraction quantity, and no mean-field-style parameterization preserves it.
-Breaking the $1/N$ scaling is partially possible: adding a count-preserving
+Breaking the $1/N$ scaling is partially possible
+(Fig.~\ref{fig:transfer_fix}): adding a count-preserving
 max-pooled suspicion branch to the aggregation, fed by an instantaneous
 claimed-last-step channel, restores near-immediate detection at $N{=}48$ and
 roughly halves the lone-defector $\rho$ twice over ($N{=}24$, $c{=}0.9$:
@@ -734,6 +751,31 @@ while every later contested step delivers only $1{-}c$, so
 $\rho\approx N L/(L+(T{-}L)(1{-}c))$ stays high as $c\to1$ even under
 near-perfect detection---the price of the detection window, not an inference
 failure.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{fig_transfer_count.png}
+\caption{The transfer fragility is the \emph{lone} defector, not team size.
+Solid: lone-defector ($D{=}1$) zero-shot transfer of the $N{=}6$ policy, v1 vs
+$N$-invariant fraction tokens---both degrade toward the all-yield line as $N$
+grows at high $c$. Dashed: the same policies at constant defector
+\emph{fraction} ($D{=}N/6$) transfer essentially perfectly at every $c$.
+Log--log; dash-dot line marks $\rho{=}2.5$.}
+\label{fig:transfer_count}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{fig_transfer_fix.png}
+\caption{Breaking the $1/N$ evidence scaling ($2{\times}2$ factorial). The
+instantaneous claimed-last-step channel alone ($\triangle$) matches the v1
+control---fast evidence is useless under convex (mean-style) pooling; the
+count-preserving max-suspicion branch alone ($\square$) halves the
+lone-defector gap; their combination ($\star$) halves it again and meets the
+$\rho{<}2.5$ target through $c{=}0.7$. The $c{=}0.9$ residual is the
+structural floor $\rho\approx NL/(L{+}(T{-}L)(1{-}c))$.}
+\label{fig:transfer_fix}
+\end{figure*}
 
 \begin{figure}[t]
 \centering
@@ -852,7 +894,8 @@ always-claim defector, which no amount of punishment dissuades, extracts more as
 $c\to1$ (Sec.~\ref{sec:hardened})---for every method, ours included. Whether
 learned commitment (sustained punishment that makes even a committed defector's
 take unprofitable) can close this gap is the natural next question. In
-boundary experiments at $c{=}1$ we find it is a \emph{credibility} problem:
+boundary experiments at $c{=}1$ we find it is a \emph{credibility} problem
+(Fig.~\ref{fig:deterrence}):
 scripted trigger policies over the same public signals (grim /
 tit-for-tat on observed claim rates) hold best-response \emph{and}
 patient learning defectors at exactly $\rho{=}1.0$ with no efficiency cost,
@@ -871,7 +914,32 @@ single $c$-conditioned policy reaches grim parity at $c{=}1$ \emph{and} holds
 even the committed claimer to $\rho{\approx}1.3$--$1.5$ for $c\le0.9$
 (vs.\ $1.7$--$4.3$ for the per-$c$ specialists), at zero false-positive cost at
 high $c$; taught commitment, continually reinforced, transfers down the
-contention range. (v) Our games
+contention range (Fig.~\ref{fig:unified}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{fig_deterrence.png}
+\caption{Deterrence at the all-or-nothing boundary, three adversary classes.
+Scripted commitment (grim / tit-for-tat on observed claim rates) holds
+best-response and $3\times$-budget patient learners at exactly $\rho{=}1.0$;
+league-learned policies (either credit horizon) leave $\rho{\approx}1.8$.
+Always-claim hits the Prop.~1 boundary ($\rho{\to}N$) for every policy---with
+$D{=}1$ efficiency collapsing, i.e.\ levelling-down, not profit. Patience
+never pays.}
+\label{fig:deterrence}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{fig_unified.png}
+\caption{One policy across regimes: a single $c$-conditioned policy trained by
+multi-$c$ league RL with a grim-teacher auxiliary loss (uni-joint) matches the
+per-$c$ specialists against trained best responses and holds the
+\emph{committed} claimer far below them at $c\le0.9$; without the teacher
+(uni-rl) commitment never emerges, and with teaching only at initialization
+(uni-bcft) it erodes.}
+\label{fig:unified}
+\end{figure} (v) Our games
 are controlled abstractions with
 a single shared cooperator policy; spatial/continuous environments are still open
 (coordinated defector coalitions, by contrast, we do test, and they are no harder
