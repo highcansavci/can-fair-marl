@@ -891,55 +891,16 @@ under a winner-take-all (Matthew) rule it disappears entirely---CAN is robust on
 as far as Prop.~1's leverage extends. (iv) What league training buys is
 \emph{deterrence} of adaptive exploiters, not immunity: a \emph{committed}
 always-claim defector, which no amount of punishment dissuades, extracts more as
-$c\to1$ (Sec.~\ref{sec:hardened})---for every method, ours included. Whether
-learned commitment (sustained punishment that makes even a committed defector's
-take unprofitable) can close this gap is the natural next question. In
-boundary experiments at $c{=}1$ we find it is a \emph{credibility} problem
-(Fig.~\ref{fig:deterrence}):
-scripted trigger policies over the same public signals (grim /
-tit-for-tat on observed claim rates) hold best-response \emph{and}
-patient learning defectors at exactly $\rho{=}1.0$ with no efficiency cost,
-while league-learned policies---whose punishment is probabilistic rather than
-absorbing---leave a residual $\rho{\approx}1.8$; detection is not the obstacle,
-learning an absorbing threat is. The gap closes by \emph{teaching}: two
-public-recursion token channels (an absorbing offensive-claim flag and its team
-trigger) plus behaviour-cloning of the scripted trigger reach exact grim parity
-($\rho{=}1.0$ against fresh and patient learners, $0.8\%$ false-positive cost);
-without the absorbing channels the clone must substitute paranoia for memory
-(a $7$--$10\%$ false-positive tax at $D{=}0$), and league RL does not discover
-the commitment even when it is representable---its learned training adversaries
-are themselves deterrable, so absorption is never differentially rewarded.
-Jointly training the league objective with the teacher unifies the regimes: a
-single $c$-conditioned policy reaches grim parity at $c{=}1$ \emph{and} holds
-even the committed claimer to $\rho{\approx}1.3$--$1.5$ for $c\le0.9$
-(vs.\ $1.7$--$4.3$ for the per-$c$ specialists), at zero false-positive cost at
-high $c$; taught commitment, continually reinforced, transfers down the
-contention range (Fig.~\ref{fig:unified}).
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.98\linewidth]{fig_deterrence.png}
-\caption{Deterrence at the all-or-nothing boundary, three adversary classes.
-Scripted commitment (grim / tit-for-tat on observed claim rates) holds
-best-response and $3\times$-budget patient learners at exactly $\rho{=}1.0$;
-league-learned policies (either credit horizon) leave $\rho{\approx}1.8$.
-Always-claim hits the Prop.~1 boundary ($\rho{\to}N$) for every policy---with
-$D{=}1$ efficiency collapsing, i.e.\ levelling-down, not profit. Patience
-never pays.}
-\label{fig:deterrence}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.98\linewidth]{fig_unified.png}
-\caption{One policy across regimes: a single $c$-conditioned policy trained by
-multi-$c$ league RL with a grim-teacher auxiliary loss (uni-joint) matches the
-per-$c$ specialists against trained best responses and holds the
-\emph{committed} claimer far below them at $c\le0.9$; without the teacher
-(uni-rl) commitment never emerges, and with teaching only at initialization
-(uni-bcft) it erodes.}
-\label{fig:unified}
-\end{figure} (v) Our games
+$c\to1$ (Sec.~\ref{sec:hardened})---for every method, ours included. In
+boundary experiments at $c{=}1$ the obstacle is \emph{credibility}, not
+detection: scripted trigger policies over the same public signals (grim /
+tit-for-tat on observed claim rates) hold best-response and patient learning
+defectors at exactly $\rho{=}1.0$ at zero efficiency cost, while league-learned
+policies, whose punishment is probabilistic rather than absorbing, leave
+$\rho{\approx}1.8$. How learned policies can acquire and retain such
+commitment---and carry it across the contention range in a single policy---is
+the subject of companion work; code for those experiments is included in the
+repository. (v) Our games
 are controlled abstractions with
 a single shared cooperator policy; spatial/continuous environments are still open
 (coordinated defector coalitions, by contrast, we do test, and they are no harder
