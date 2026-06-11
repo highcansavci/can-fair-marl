@@ -35,48 +35,26 @@ savcisavcican@gmail.com}}
 \begin{abstract}
 Fair cooperative multi-agent reinforcement learning (MARL) teams that maximize an
 egalitarian welfare are exploitable: a single self-interested agent free-rides on
-the surplus that fair agents forgo to raise the worst-off. A centralized
-need-based allocator removes the exploit, but only by taking allocation out of the
-agents' hands; whether \emph{decentralized} policies can be robust was left open.
-We show that the futility of a decentralized defense is an artifact of
-\emph{all-or-nothing} contention. Under \emph{graded} contention---where a
-contested resource still delivers a fraction $1{-}c$ and wastes $c$---we prove that
-for any $c<1$ a worst-off cooperator that contests a free-rider strictly improves
-on yielding, so decentralized leverage exists (Prop.~1). Realizing it, however,
-requires solving a coordination problem under uncertainty: the number of
-free-riders is \emph{unknown and variable}, so any fixed rule is dominated
-(always-contest wastes $c$ when nobody defects; always-yield collapses when someone
-does). We introduce \textbf{CAN}, a permutation-equivariant cross-attention policy
-over agents' \emph{observed behaviour} that infers how many free-riders are present
-and responds proportionally---turn-taking when none, contesting just enough when
-some. Trained against an adversarial league (PSRO), CAN keeps best-response
-exploitability low ($\rho{\approx}1.2$--$1.5$, vs.\ $\rho{=}N$ unprotected) across
-the full contention range while wasting essentially nothing when no free-rider is
-present (efficiency ${\approx}1.0$ vs.\ the $1{-}c$ of always-contest) and
-retaining most of that efficiency even \emph{with} a free-rider present
-($D{\ge}1$ efficiency $0.83$--$0.96$, so its robustness is not bought with waste),
-thereby approaching the centralized oracle on both axes \emph{without} a central
-allocator. On the same game the
-fair-MARL learners fail on complementary axes---GGF/FEN learn to yield and are
-exploitable ($\rho{\approx}N$), SOTO learns to all-contest and is wasteful (waste
-$c$)---and league-training those objectives under CAN's identical budget does not
-rescue them: they harden into the same corners, so adversarial training alone is
-not the mechanism, and the welfare-fair objectives are structurally hard to
-harden. A committed always-claim audit sharpens the limit from the other side:
-every learned defense, CAN included, \emph{deters} an adaptive exploiter but
-yields ground to a committed one as the leverage $(1{-}c)/2$ vanishes
-($\rho$ rising to ${\approx}3.9$ at $c{=}0.9$)---deterrence, not immunity.
-On two further
-games we find a clear scope rather than blanket generality: CAN stays efficient
-($D{=}0$ efficiency $0.94$--$1.0$) and Pareto-dominates the welfare-fair learners
-throughout, but its robustness holds only in proportion to the contest leverage a
-game provides---strong on a multi-server game, partial when leverage weakens
-(high-value, high-contention steps), and absent under a winner-take-all rule where
-Prop.~1 fails. We further report where the approach is fragile---weak leverage,
-committed defectors at high contention, and detecting a \emph{lone} defector in
-much larger teams (transfer at constant defector fraction works zero-shot)---
-giving an honest account of how far decentralized robust fairness
-currently reaches.
+the surplus that fair agents forgo to raise the worst-off, and the known remedy
+is a \emph{centralized} need-based allocator. We show that a decentralized
+defense becomes possible once contention is \emph{graded}: when a contested
+resource still delivers a fraction $1{-}c$, a worst-off cooperator that contests
+a free-rider strictly improves on yielding (Prop.~1), so leverage exists for
+every $c<1$. We introduce \textbf{CAN}, a permutation-equivariant
+cross-attention policy over agents' observed behaviour that infers how many
+free-riders are present and responds proportionally---turn-taking when none,
+contesting just enough when some. Trained against an adversarial league, CAN
+keeps best-response exploitability near the centralized oracle
+($\rho{\approx}1.2$--$1.5$ vs.\ $\rho{=}N$ unprotected) at essentially no
+efficiency cost, where the fair-MARL learners (GGF, FEN, SOTO) each collapse to
+an exploitable or wasteful extreme. Giving those objectives CAN's identical
+adversarial training does not rescue them, so the objective---not adversarial
+training alone---is what makes hardening possible. Against a \emph{committed}
+(non-adaptive) defector, every learned defense including ours provides
+deterrence rather than immunity, weakening as the leverage $(1{-}c)/2$
+vanishes. Across further environments and team sizes the same principle sets
+the scope: robustness holds exactly as far as the game's contest leverage
+reaches, and we map that boundary rather than claim to remove it.
 \end{abstract}
 
 \renewcommand{\IEEEkeywordsname}{Keywords}
@@ -897,10 +875,16 @@ detection: scripted trigger policies over the same public signals (grim /
 tit-for-tat on observed claim rates) hold best-response and patient learning
 defectors at exactly $\rho{=}1.0$ at zero efficiency cost, while league-learned
 policies, whose punishment is probabilistic rather than absorbing, leave
-$\rho{\approx}1.8$. How learned policies can acquire and retain such
-commitment---and carry it across the contention range in a single policy---is
-the subject of companion work; code for those experiments is included in the
-repository. (v) Our games
+$\rho{\approx}1.8$. This does not mean one should simply deploy the trigger:
+the scripts are hand-designed around a known threat model (a claim-rate flag
+with a tuned threshold) and are correct only at the boundary---where
+punishment is free because the contested unit is destroyed anyway---whereas at
+$c<1$ permanent punishment burns surplus that proportional contesting would
+recover, which is exactly the regime the learned policy handles. The open
+problem is \emph{learned, transferable} commitment: a single policy that
+acquires the trigger's credibility where leverage is absent without inheriting
+its rigidity where leverage exists. That is the subject of companion work;
+code for those experiments is included in the repository. (v) Our games
 are controlled abstractions with
 a single shared cooperator policy; spatial/continuous environments are still open
 (coordinated defector coalitions, by contrast, we do test, and they are no harder
